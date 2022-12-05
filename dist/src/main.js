@@ -35,22 +35,45 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const dotenv = __importStar(require("dotenv"));
 const express_1 = __importDefault(require("express"));
 const body_parser_1 = require("body-parser");
 const mongoose_1 = __importDefault(require("mongoose"));
-const dotenv = __importStar(require("dotenv"));
+const cors_1 = __importDefault(require("cors"));
+const routers_1 = require("./routers");
 dotenv.config();
 const app = (0, express_1.default)();
+app.use((0, cors_1.default)({
+    origin: "*",
+    optionsSuccessStatus: 200
+}));
 app.use((0, body_parser_1.urlencoded)({
     extended: false
 }));
 app.use((0, body_parser_1.json)());
+app.use(routers_1.newPostRouter);
+app.use(routers_1.deletePostRouter);
+app.use(routers_1.updatePostRouter);
+app.use(routers_1.showPostRouter);
+app.use(routers_1.newCommentRouter);
+app.use(routers_1.deleteCommentRouter);
+app.all('*', (req, res, next) => {
+    const error = new Error('not found!');
+    error.status = 404;
+    next(error);
+});
+app.use((error, req, res, next) => {
+    if (error.status) {
+        return res.status(error.status).json({ message: error.message });
+    }
+    res.status(500).json({ message: 'Something went wrong' });
+});
 const start = () => __awaiter(void 0, void 0, void 0, function* () {
     if (!process.env.MONGO_URI)
         throw new Error('MONGO_URI is expected');
     try {
         yield mongoose_1.default.connect(process.env.MONGO_URI);
-        console.info('Connected to DB sucessfully');
+        console.info('Connected to DB successfully');
     }
     catch (err) {
         throw new Error(`DB Error!`);
