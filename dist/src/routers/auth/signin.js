@@ -8,21 +8,28 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.signinrouter = void 0;
 const express_1 = require("express");
 const user_1 = require("../../models/user");
+const common_1 = require("../../../common");
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const router = (0, express_1.Router)();
 exports.signinrouter = router;
 router.post('/signin', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const { email, password } = req.body;
     const user = yield user_1.User.findOne({ email });
     if (!user)
-        return new Error('wrong credentials');
-    const newUser = new user_1.User({
-        email,
-        password
-    });
-    yield newUser.save();
-    res.sendStatus(201).send(newUser);
+        return next(new common_1.BadRequestError('wrong credentials'));
+    const isEqual = yield common_1.authenticationService.pwdCompare(user.password, password);
+    if (!isEqual)
+        return next(new common_1.BadRequestError('Wrong credentials'));
+    const token = jsonwebtoken_1.default.sign({
+        email, userId: user.id
+    }, process.env.JWT_KEY);
+    req.session = { jwt: token };
+    res.status(200).send(user);
 }));

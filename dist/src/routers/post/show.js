@@ -8,21 +8,18 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.showPostRouter = void 0;
 const express_1 = require("express");
-const post_1 = __importDefault(require("../../models/post"));
+const post_1 = require("../../models/post");
 const router = (0, express_1.Router)();
 exports.showPostRouter = router;
 router.post('/api/post/show/', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.body;
     if (!id) {
-        const allPosts = yield post_1.default.find();
+        const allPosts = yield post_1.Post.find();
         return res.status(200).send(allPosts);
     }
-    const post = yield post_1.default.findOne({ _id: id }).populate('comments');
+    const post = yield post_1.Post.findOne({ _id: id }).populate('comments');
     res.status(200).send(post);
 }));

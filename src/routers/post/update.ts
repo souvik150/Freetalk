@@ -1,5 +1,6 @@
 import {Router, Request, Response, NextFunction} from 'express';
-import Post from "../../models/post";
+import {Post} from "../../models/post";
+import {BadRequestError} from "../../../common";
 
 const router = Router()
 
@@ -8,9 +9,7 @@ router.post('/api/post/update/:id', async (req: Request, res: Response, next: Ne
     const {content, title} = req.body;
 
     if(!id) {
-        const error = new Error('post id is required') as CustomError;
-        error.status = 404;
-        next(error)
+        return next(new BadRequestError('post id is required'))
     }
 
     let updatedPost;
@@ -22,9 +21,7 @@ router.post('/api/post/update/:id', async (req: Request, res: Response, next: Ne
             {new : true}
         )
     } catch (e) {
-        const err = new Error('Post cannot be updated') as CustomError
-        err.status = 400;
-        next(err)
+        return next(new Error('Post cannot be updated'))
     }
 
     res.status(200).send(updatedPost);

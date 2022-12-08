@@ -8,30 +8,26 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteCommentRouter = void 0;
 const express_1 = require("express");
-const post_1 = __importDefault(require("../../models/post"));
+const post_1 = require("../../models/post");
+const common_1 = require("../../../common");
 const router = (0, express_1.Router)();
 exports.deleteCommentRouter = router;
 router.delete('/api/comment/:commentId/delete/:postId', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const { commentId, postId } = req.params;
     if (!commentId || !postId) {
-        const error = new Error('Post id and Comment id are both required');
-        error.status = 400;
-        next(error);
+        return next(new common_1.BadRequestError('Post id and Comment id are both required'));
     }
     try {
-        yield post_1.default.findOneAndRemove({
+        yield post_1.Post.findOneAndRemove({
             _id: commentId
         });
     }
     catch (error) {
         next(new Error('Comment cannot be updated'));
     }
-    yield post_1.default.findOneAndUpdate({ _id: postId }, { $pull: { comments: commentId } });
+    yield post_1.Post.findOneAndUpdate({ _id: postId }, { $pull: { comments: commentId } });
     res.status(200).json({ success: true });
 }));

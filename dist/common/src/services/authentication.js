@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Authentication = void 0;
+exports.authenticationService = exports.Authentication = void 0;
 const crypto_1 = require("crypto");
 const util_1 = require("util");
 const scryptAsync = (0, util_1.promisify)(crypto_1.scrypt);
@@ -30,3 +30,4 @@ class Authentication {
     }
 }
 exports.Authentication = Authentication;
+exports.authenticationService = new Authentication();

@@ -1,7 +1,7 @@
 import {Router, Request, Response, NextFunction} from "express";
-import Comment from '../../models/comment';
-import Post from '../../models/post';
-import comment from "../../models/comment";
+import {Comment} from '../../models/comment';
+import {Post} from '../../models/post';
+import {BadRequestError} from "../../../common";
 
 const router = Router()
 
@@ -10,12 +10,11 @@ router.post('/api/comment/new/:postId', async (req: Request, res: Response, next
     const {postId} = req.params;
 
     if(!content) {
-        const error = new Error('Content is required') as CustomError;
-        error.status = 400;
-        return next(error);
+        return next(new BadRequestError('Content is required'))
+
     }
 
-    const newComment = new Comment({
+    const newComment = Comment.build({
         userName: userName ? userName: 'anonymous',
         content: content,
     })

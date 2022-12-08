@@ -8,24 +8,20 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deletePostRouter = void 0;
 const express_1 = require("express");
-const post_1 = __importDefault(require("../../models/post"));
+const post_1 = require("../../models/post");
+const common_1 = require("../../../common");
 const router = (0, express_1.Router)();
 exports.deletePostRouter = router;
 router.delete('/api/post/delete/:id', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
     if (!id) {
-        const error = new Error('Post id is required');
-        error.status = 400;
-        next(error);
+        return next(new common_1.BadRequestError('Post id is required'));
     }
     try {
-        yield post_1.default.findOneAndRemove({
+        yield post_1.Post.findOneAndRemove({
             _id: id
         });
     }

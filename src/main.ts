@@ -4,7 +4,7 @@ import {json, urlencoded} from 'body-parser';
 import mongoose from "mongoose";
 import cors from "cors";
 import cookieSession from "cookie-session";
-
+import {currentUser, errorHandler, NotFoundError, requireAuth} from "../common";
 import {
     newPostRouter,
     deletePostRouter,
@@ -13,7 +13,6 @@ import {
     newCommentRouter,
     deleteCommentRouter
 } from './routers';
-import {currentUser, requireAuth} from "../common";
 
 dotenv.config();
 
@@ -46,9 +45,7 @@ app.use(requireAuth ,newCommentRouter)
 app.use(requireAuth ,deleteCommentRouter)
 
 app.all('*', (req,res,next) => {
-    const error = new Error('not found!') as CustomError;
-    error.status = 404
-    next(error)
+    next(new NotFoundError())
 })
 
 declare global {
@@ -57,13 +54,7 @@ declare global {
     }
 }
 
-app.use((error: CustomError, req: Request, res: Response, next: NextFunction) => {
-    if(error.status) {
-        return res.status(error.status).json({message: error.message});
-    }
-
-    res.status(500).json({message: 'Something went wrong'});
-})
+app.use(errorHandler);
 
 const start = async () => {
     if(!process.env.MONGO_URI) throw new Error('MONGO_URI is expected')

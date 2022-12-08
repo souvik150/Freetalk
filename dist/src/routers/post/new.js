@@ -8,26 +8,26 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.newPostRouter = void 0;
 const express_1 = require("express");
-const post_1 = __importDefault(require("../../models/post"));
+const post_1 = require("../../models/post");
+const common_1 = require("../../../common");
+const user_1 = require("../../models/user");
 const router = (0, express_1.Router)();
 exports.newPostRouter = router;
 router.post('/api/post/new', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const { title, content } = req.body;
     if (!title || !content) {
-        const error = new Error('Title and content are required');
-        error.status = 400;
-        return next(error);
+        return next(new common_1.BadRequestError('Title and content are required'));
     }
-    const newPost = new post_1.default({
+    const newPost = post_1.Post.build({
         title: title,
         content: content,
     });
     yield newPost.save();
+    yield user_1.User.findOneAndUpdate({
+        _id: req.currentUser.userId
+    });
     res.status(201).send(newPost);
 }));
