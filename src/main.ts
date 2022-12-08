@@ -3,6 +3,7 @@ import express, {NextFunction, Response, Request} from 'express'
 import {json, urlencoded} from 'body-parser';
 import mongoose from "mongoose";
 import cors from "cors";
+import cookieSession from "cookie-session";
 
 import {
     newPostRouter,
@@ -12,6 +13,7 @@ import {
     newCommentRouter,
     deleteCommentRouter
 } from './routers';
+import {currentUser, requireAuth} from "../common";
 
 dotenv.config();
 
@@ -21,19 +23,27 @@ app.use(cors({
     optionsSuccessStatus: 200
 }))
 
+app.set('trust proxy', true);
+
 app.use(urlencoded({
     extended: false
 }))
 
 app.use(json())
+app.use(cookieSession({
+    signed: false,
+    secure: false
+}))
 
-app.use(newPostRouter)
-app.use(deletePostRouter)
-app.use(updatePostRouter)
-app.use(showPostRouter)
+app.use(currentUser);
 
-app.use(newCommentRouter)
-app.use(deleteCommentRouter)
+app.use(requireAuth ,newPostRouter)
+app.use(requireAuth ,deletePostRouter)
+app.use(requireAuth ,updatePostRouter)
+app.use(requireAuth ,showPostRouter)
+
+app.use(requireAuth ,newCommentRouter)
+app.use(requireAuth ,deleteCommentRouter)
 
 app.all('*', (req,res,next) => {
     const error = new Error('not found!') as CustomError;
@@ -57,6 +67,7 @@ app.use((error: CustomError, req: Request, res: Response, next: NextFunction) =>
 
 const start = async () => {
     if(!process.env.MONGO_URI) throw new Error('MONGO_URI is expected')
+    if(!process.env.JWT_KEY) throw new Error('JWT_KEY is expected')
 
     try {
         await mongoose.connect(process.env.MONGO_URI)
